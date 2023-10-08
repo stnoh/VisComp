@@ -1,9 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 using VisComp;
 using OpenCvSharp;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
 
 public class ChessboardMarkerBehaviour : MonoBehaviour
 {
@@ -33,30 +32,21 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
 
     public void CreateMarkerTexture2D()
     {
-        RemoveMarkerTexture2D();
+        if (null != material) RemoveMarkerTexture2D();
 
         // create markermap
         Mat img_bgr = CreateMarkerMap();
-        //Cv2.ImShow("marker", img_bgr); // check image
+        //Cv2.ImShow("Chessboard", img_bgr); // [CHECK: OK]
 
         Texture2D tex2D = img_bgr.ToTexture2D();
 
-        // mesh for markermap
-        float half_scale_x = 0.5f * block_mm * block_width  * 0.01f;
-        float half_scale_z = 0.5f * block_mm * block_height * 0.01f;
-
-        Mesh m = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-        Vector3[] verts = m.vertices;
-        verts[0] = new Vector3(-half_scale_x, 0.0f, -half_scale_z);
-        verts[1] = new Vector3(+half_scale_x, 0.0f, -half_scale_z);
-        verts[2] = new Vector3(-half_scale_x, 0.0f, +half_scale_z);
-        verts[3] = new Vector3(+half_scale_x, 0.0f, +half_scale_z);
-        m.vertices = verts;
-        m.RecalculateNormals();
+        // mesh for markermap: [mm] to [m]
+        float half_scale_x = 0.5f * W_mm * 0.001f;
+        float half_scale_z = 0.5f * H_mm * 0.001f;
 
         // add Components to this GameObject
         var mf = gameObject.AddComponent<MeshFilter>();
-        mf.mesh = m;
+        mf.mesh = Helper.GetBoardMesh(half_scale_x, half_scale_z);
 
         material = new Material(Shader.Find("Unlit/Texture"));
         material.mainTexture = tex2D;
@@ -67,28 +57,8 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
 
     public void ExportPDF(string filepath)
     {
-        var document = new PdfDocument();
-        document.Info.Title = "Chessboard";
-
-        // A4 with landscape: 842 x 595 = 297[mm] x 210[mm]
-        PdfPage page = document.AddPage();
-        page.Size = PdfSharp.PageSize.A4;
-        page.Orientation = PdfSharp.PageOrientation.Landscape;
-
-        // compute the size
-        float scale = (float)page.Height / 210.0f;
-        double W = scale * block_width * block_mm;
-        double H = scale * block_height * block_mm;
-
-        // draw image on PDF
-        XGraphics gfx = XGraphics.FromPdfPage(page);
         Mat img_bgr = material.mainTexture.ToMat();
-        XImage xImage = XImage.FromStream(img_bgr.ToMemoryStream());
-        xImage.Interpolate = false;
-        gfx.DrawImage(xImage, 0.5 * page.Width - 0.5 * W, 0.5 * page.Height - 0.5 * H, W, H); // centering
-        //gfx.DrawImage(xImage, 0, 0, W, H); // [CHECK: OK]
-
-        document.Save(filepath);
+        Helper.ExportPDF(filepath, img_bgr, new Vector2(W_mm, H_mm));
     }
 
     public void RemoveMarkerTexture2D()
@@ -109,7 +79,6 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
     #region SUBROUTINES
 
     float W_mm, H_mm;
-    int   W, H;
 
     Mat CreateMarkerMap()
     {
@@ -118,8 +87,8 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
         H_mm = block_mm * block_height;
 
         // image (unit: pixel)
-        H = pixel_per_block * block_height;
-        W = pixel_per_block * block_width;
+        int H = pixel_per_block * block_height;
+        int W = pixel_per_block * block_width;
         Mat marker_bgr = new Mat(H, W, MatType.CV_8UC3, new Scalar(255, 255, 255));
 
         for (int block_j = 0; block_j < block_height; block_j++)
