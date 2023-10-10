@@ -56,7 +56,7 @@ public class Frustum_test : MonoBehaviour
         // text output to Console (if you need)
         /*
         Debug.Log(
-            proj[0, 0] + " " + proj[0, 1] + ""  + proj[0, 2] + " " + proj[0, 3] + "\n" +
+            proj[0, 0] + " " + proj[0, 1] + " " + proj[0, 2] + " " + proj[0, 3] + "\n" +
             proj[1, 0] + " " + proj[1, 1] + " " + proj[1, 2] + " " + proj[1, 3] + "\n" +
             proj[2, 0] + " " + proj[2, 1] + " " + proj[2, 2] + " " + proj[2, 3] + "\n" +
             proj[3, 0] + " " + proj[3, 1] + " " + proj[3, 2] + " " + proj[3, 3] );
