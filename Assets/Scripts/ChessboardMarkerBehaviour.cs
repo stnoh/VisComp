@@ -4,7 +4,7 @@ using UnityEngine;
 using VisComp;
 using OpenCvSharp;
 
-public class ChessboardMarkerBehaviour : MonoBehaviour
+public class ChessboardMarkerBehaviour : MarkerObjectBehaviour
 {
     #region CONSTANTS
 
@@ -20,67 +20,46 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
     public int   block_width  = 8;
     public int   block_height = 5;
 
-    [HideInInspector]
-    public Material     material = null;
-    public MatOfPoint3f chessboard_corners; // 3D points of corners
-
     #endregion // PUBLIC_MEMBERS
 
 
 
-    #region PUBLIC_METHODS
+    #region MONO_BEHAVIOUR
 
-    public void CreateMarkerTexture2D()
+    Size pattern_size;
+    Point3f[] corners;
+
+    void Start()
     {
-        if (null != material) RemoveMarkerTexture2D();
+        // [CAUTION] "Size" and "Point3f[]" is initialized when running
+        pattern_size = new Size(block_width - 1, block_height - 1);
 
-        // create markermap
-        Mat img_bgr = CreateMarkerMap();
-        //Cv2.ImShow("Chessboard", img_bgr); // [CHECK: OK]
+        // corners (unit: [mm])
+        corners = new Point3f[pattern_size.Width * pattern_size.Height];
+        for (int j = 0; j < block_height - 1; j++)
+        for (int i = 0; i < block_width  - 1; i++)
+        {
+            float obj_x = block_mm * i - block_mm * 0.5f * (block_width -2);
+            float obj_y = block_mm * j - block_mm * 0.5f * (block_height-2);
+            
+            // convert [mm] to [m]
+            obj_x *= 0.001f;
+            obj_y *= 0.001f;
 
-        Texture2D tex2D = img_bgr.ToTexture2D();
+            Point3f pt3d = new Point3f(obj_x, 0.0f, -obj_y); // [CAUTION]
 
-        // mesh for markermap: [mm] to [m]
-        float half_scale_x = 0.5f * W_mm * 0.001f;
-        float half_scale_z = 0.5f * H_mm * 0.001f;
-
-        // add Components to this GameObject
-        var mf = gameObject.AddComponent<MeshFilter>();
-        mf.mesh = Helper.GetBoardMesh(half_scale_x, half_scale_z);
-
-        material = new Material(Shader.Find("Unlit/Texture"));
-        material.mainTexture = tex2D;
-
-        var mr = gameObject.AddComponent<MeshRenderer>();
-        mr.material = material;
+            //Debug.Log(pt3d); // [CHECK: OK]
+            corners[i + j * (block_width - 1)] = pt3d;
+        }
     }
 
-    public void ExportPDF(string filepath)
-    {
-        Mat img_bgr = material.mainTexture.ToMat();
-        Helper.ExportPDF(filepath, img_bgr, new Vector2(W_mm, H_mm));
-    }
-
-    public void RemoveMarkerTexture2D()
-    {
-        DestroyImmediate(material);
-
-        var mf = gameObject.GetComponent<MeshFilter>();
-        if (null != mf) DestroyImmediate(mf);
-
-        var mr = gameObject.GetComponent<MeshRenderer>();
-        if (null != mr) DestroyImmediate(mr);
-    }
-
-    #endregion // PUBLIC_METHODS
+    #endregion // MONO_BEHAVIOUR
 
 
 
     #region SUBROUTINES
 
-    float W_mm, H_mm;
-
-    Mat CreateMarkerMap()
+    protected override Mat CreateMarkerMap()
     {
         // object (unit: [mm])
         W_mm = block_mm * block_width;
@@ -107,25 +86,22 @@ public class ChessboardMarkerBehaviour : MonoBehaviour
             buf.CopyTo(pos);
         }
 
-        // corners (unit: [mm])
-        chessboard_corners = new MatOfPoint3f();
-        for (int j = 0; j < block_height - 1; j++)
-        for (int i = 0; i < block_width  - 1; i++)
+        return marker_bgr;
+    }
+
+    public override bool GetDetectedCorners(Mat image_bgra, out Point3f[] _corners, out Point2f[] _points, bool show)
+    {
+        bool detected = Cv2.FindChessboardCorners(image_bgra, pattern_size, out _points, ChessboardFlags.AdaptiveThresh);
+        _corners = corners;
+
+        if (show)
         {
-            float obj_x = block_mm * i - block_mm * 0.5f * (block_width -2);
-            float obj_y = block_mm * j - block_mm * 0.5f * (block_height-2);
-            
-            // convert [mm] to [m]
-            obj_x *= 0.001f;
-            obj_y *= 0.001f;
-
-            Point3f pt3d = new Point3f(obj_x, obj_y, 0.0f);
-
-            //Debug.Log(pt3d);
-            chessboard_corners.Add(pt3d);
+            Mat image_clone = image_bgra.Clone();
+            Cv2.DrawChessboardCorners(image_clone, pattern_size, _points, detected);
+            Cv2.ImShow("detected", image_clone);
         }
 
-        return marker_bgr;
+        return detected;
     }
 
     #endregion // SUBROUTINES
