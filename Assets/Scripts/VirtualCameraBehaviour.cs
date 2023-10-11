@@ -32,7 +32,7 @@ public class VirtualCameraBehaviour : CameraTextureBehaviour
 
         // convert RenderTexture to Mat
         image_bgra = renderTexture.ToMat();
-        //Cv2.ImShow("test", image_bgra);
+        //Cv2.ImShow("rendered", image_bgra); // [CHECK: OK]
     }
 
     void OnDisable()

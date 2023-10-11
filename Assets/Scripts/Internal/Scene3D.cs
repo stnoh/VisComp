@@ -86,6 +86,17 @@ namespace VisComp
             return new float[] { fx, fy, cx, cy };
         }
 
+        public static float[] CameraParameters(Matrix4x4 proj, int width, int height)
+        {
+            float[] values = NormalizedCameraParameters(proj);
+            float fx = values[0];
+            float fy = values[1];
+            float cx = values[2];
+            float cy = values[3];
+
+            return new float[] { width * fx, fy, height * width * cx, height * cy };
+        }
+
         public static Matrix4x4 ProjectionMatrixFromNormalizedCameraParameters(float fx, float fy, float cx, float cy, float z_n = 0.01f, float z_f = 1000.0f)
         {
             Matrix4x4 mat = Matrix4x4.zero;
