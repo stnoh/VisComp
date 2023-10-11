@@ -21,6 +21,19 @@ public class VirtualCameraBehaviour : CameraTextureBehaviour
     {
         renderCamera = gameObject.GetComponent<Camera>();
         renderTexture = new RenderTexture(image_width, image_height, 32);
+
+        // set texture as WebCamTexture
+        if (null != ImageQuad)
+        {
+            Renderer renderer = ImageQuad.GetComponent<Renderer>();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+
+            renderer.material.shader = Shader.Find("Unlit/Texture");
+            renderer.material.mainTexture = renderTexture;
+
+            FitToScreen();
+        }
     }
 
     void Update()

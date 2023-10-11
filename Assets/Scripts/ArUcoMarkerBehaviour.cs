@@ -87,7 +87,10 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         obj_x *= 0.001f;
         obj_y *= 0.001f;
 
-        return new Point3f(obj_x, 0.0f, -obj_y); // [CAUTION]
+        Point3f pt3d = new Point3f(obj_x, 0.0f, -obj_y); // [CAUTION] Z-forward in both CV and DX
+        
+        //Debug.Log(i + "," + j + " : " + pt3d); // [CHECK: OK]
+        return pt3d;
     }
 
     protected override Mat CreateMarkerMap()
