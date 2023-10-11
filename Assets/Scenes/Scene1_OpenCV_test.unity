@@ -165,12 +165,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38c07df4a3da18848b4ef14991debc04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WebcamTextureQuad: {fileID: 1574399267}
-  webCamTexture: {fileID: 0}
-  selected_id: 0
+  ImageQuad: {fileID: 1574399267}
   image_width: 640
   image_height: 480
   fit: 0
+  webCamTexture: {fileID: 0}
+  selected_id: 0
 --- !u!114 &1075649843
 MonoBehaviour:
   m_ObjectHideFlags: 0
