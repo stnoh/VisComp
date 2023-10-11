@@ -12,6 +12,8 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
     public GameObject CameraObject;
     public GameObject MarkerObject;
 
+    public string calib_filepath;
+
     #endregion // PUBLIC_MEMBERS
 
 
@@ -64,7 +66,12 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.C))
         {
             Debug.Log("run intrinsic calibration");
-            double reproj_err = RunCalibration();
+            double reproj_error = RunCalibration();
+
+            if (reproj_error > 1.0)
+            {
+                Debug.LogWarning("WARNING: reprojection error exceeds 1.0");
+            }
         }
 
         // R: "reset"
@@ -95,7 +102,7 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
     double RunCalibration()
     {
         int W = camera_script.image_width;
-        int H = camera_script.image_width;
+        int H = camera_script.image_height;
         Size imageSize = new Size(W, H);
 
         // initial guess for camera matrix
@@ -129,8 +136,10 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
         System.IO.Directory.CreateDirectory(dir);
 
         // export calibration data to XML file
-        using (var fs = new FileStorage(dir + "/calibration.xml", FileStorage.Mode.Write))
+        calib_filepath = dir + "/calibration.xml";
+        using (var fs = new FileStorage(calib_filepath, FileStorage.Mode.Write))
         {
+            fs.Add("image_size").Add(imageSize); // add image size
             fs.Write("camera_matrix", cameraMatrix);
             fs.Write("dist_coeffs", distCoeffs);
             fs.Write("reproj_error", reproj_error);
@@ -142,6 +151,9 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
                 string filename = "images" + cnt.ToString("D2") + ".png";
                 Cv2.ImWrite(dir + "/" + filename, img_bgra,
                     new ImageEncodingParam(ImwriteFlags.PngCompression, 0)); // save as .png without compression
+
+                // [TODO] write [R|t]  for each image
+
                 cnt++;
 
             }
