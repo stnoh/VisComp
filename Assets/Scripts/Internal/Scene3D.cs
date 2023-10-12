@@ -18,6 +18,13 @@ namespace VisComp
             return Quaternion.LookRotation(m.GetColumn(2), m.GetColumn(1));
         }
 
+        public static void Matrix2RigidTransform(Matrix4x4 mat4x4_source, Transform transform_target)
+        {
+            transform_target.localPosition = mat4x4_source.GetColumn(3);
+            transform_target.localRotation = QuaternionFromMatrix4x4(mat4x4_source);
+            transform_target.localScale = Vector3.one; // assume unit scale (1,1,1)
+        }
+
         public static Matrix4x4 ProjectionMatrixFromFrustum(float L, float R, float B, float T, float z_n, float z_f)
         {
             Matrix4x4 mat = Matrix4x4.zero;
@@ -108,6 +115,11 @@ namespace VisComp
             float T = +z_n / fy * cy;
 
             return ProjectionMatrixFromFrustum(L, R, B, T, z_n, z_f);
+        }
+
+        public static Matrix4x4 ProjectionMatrixFromCameraParameters(float fx, float fy, float cx, float cy, int width, int height, float z_n = 0.01f, float z_f = 1000.0f)
+        {
+            return ProjectionMatrixFromNormalizedCameraParameters(fx/(float)width, fy/ (float)height, cx/ (float)width, cy/ (float)height, z_n, z_f);
         }
     }
 }

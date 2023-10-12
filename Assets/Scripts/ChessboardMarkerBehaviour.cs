@@ -46,7 +46,7 @@ public class ChessboardMarkerBehaviour : MarkerObjectBehaviour
             obj_x *= 0.001f;
             obj_y *= 0.001f;
 
-            Point3f pt3d = new Point3f(obj_x, 0.0f, -obj_y); // [CAUTION] Z-forward in both CV and DX
+            Point3f pt3d = new Point3f(obj_x, obj_y, 0.0f);
 
             //Debug.Log(i + "," + j + " : " + pt3d); // [CHECK: OK]
             corners[i + j * (block_width - 1)] = pt3d;

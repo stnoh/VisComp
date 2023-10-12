@@ -23,7 +23,7 @@ namespace VisComp
             result.Apply();
             RenderTexture.active = currentRT;
 
-            Object.Destroy(rt); // [CAUTION] prevent memory leak
+            Object.DestroyImmediate(rt); // [CAUTION] prevent memory leak
             return result;
         }
 
@@ -35,7 +35,7 @@ namespace VisComp
             mat = mat.Flip(FlipMode.X); // 1st -> 4th Quadrant
             mat = mat.CvtColor(ColorConversionCodes.RGBA2BGRA); // RGBA -> BGRA for OpenCV
 
-            Object.Destroy(tex2D); // [CAUTION] prevent memory leak
+            Object.DestroyImmediate(tex2D); // [CAUTION] prevent memory leak
             return mat;
         }
 
