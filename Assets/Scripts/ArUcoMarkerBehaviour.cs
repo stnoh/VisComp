@@ -44,6 +44,13 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         detector_params = DetectorParameters.Create();
 
         int pixel_per_marker = pixel_per_block * block_per_marker;
+        W = pixel_per_block * (marker_width  * (block_per_marker + 1) - 1);
+        H = pixel_per_block * (marker_height * (block_per_marker + 1) - 1);
+
+        // object (unit: [mm])
+        float mm_per_block = marker_mm / block_per_marker;
+        W_mm = mm_per_block * (marker_width  * (block_per_marker + 1) - 1);
+        H_mm = mm_per_block * (marker_height * (block_per_marker + 1) - 1);
 
         markermap_corners = new Dictionary<int, Point3f[]>();
 
@@ -89,7 +96,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
 
         Point3f pt3d = new Point3f(obj_x, obj_y, 0.0f);
 
-        //Debug.Log(i + "," + j + " : " + pt3d); // [CHECK: OK]
+        //Debug.Log(img_x + "," + img_y + " : " + obj_x + ", " + obj_y); // [CHECK: OK]
         return pt3d;
     }
 
