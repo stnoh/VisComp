@@ -43,6 +43,13 @@ namespace VisComp
             return mat;
         }
 
+        public static float GetApproxFOV(Matrix4x4 proj, bool isVertical = true)
+        {
+            // fovy (field-of-view in y direction) as default
+            float value = (isVertical) ? proj[1, 1] : proj[0, 0];
+            return 2.0f * Mathf.Atan2(1.0f, value) * Mathf.Rad2Deg;
+        }
+
         public static float[] FrustumParameters(Matrix4x4 proj)
         {
             Debug.Assert(proj[3, 2] == -1.0f); // only works for perspective matrix
