@@ -36,43 +36,16 @@ public class SimpleAR_test : MonoBehaviour
 
     void Start()
     {
-        camera_script = CameraTextureObject.GetComponent<CameraTextureBehaviour>();
+        camera_script = CameraTextureObject.GetComponentOrPause<CameraTextureBehaviour>("ERROR: there is no CameraTextureBehaviour in the CameraObject.");
 
-        if (null == camera_script)
-        {
-            Debug.LogError("ERROR: there is no CameraTextureBehaviour in the CameraObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
+        rendererQuad = ImageQuadObject.GetComponentOrPause<Renderer>("ERROR: there is no Renderer in the ImageQuadObject.");
+        rendererQuad.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        rendererQuad.receiveShadows = false;
+        rendererQuad.material.shader = Shader.Find("Unlit/Texture");
 
-        rendererQuad = ImageQuadObject.GetComponent<Renderer>();
+        virtualCamera = CameraObject.GetComponentOrPause<Camera>("ERROR: there is no Camera in the CameraObject.");
 
-        if (null == rendererQuad)
-        {
-            Debug.LogError("ERROR: there is no Renderer in the ImageQuadObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
-        else
-        {
-            rendererQuad.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            rendererQuad.receiveShadows = false;
-            rendererQuad.material.shader = Shader.Find("Unlit/Texture");
-        }
-
-        virtualCamera = CameraObject.GetComponent<Camera>();
-
-        if (null == virtualCamera)
-        {
-            Debug.LogError("ERROR: there is no Camera in the CameraObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
-
-        marker_script = MarkerObject.GetComponent<MarkerObjectBehaviour>();
-
-        if (null == marker_script)
-        {
-            Debug.LogError("ERROR: there is no MarkerObjectBehaviour in the MarkerObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
+        marker_script = MarkerObject.GetComponentOrPause<MarkerObjectBehaviour>("ERROR: there is no MarkerObjectBehaviour in the MarkerObject.");
 
         if (!LoadCalibrationData(calib_filepath))
         {
@@ -120,6 +93,8 @@ public class SimpleAR_test : MonoBehaviour
             {
                 virtualCamera.enabled = false;
             }
+
+            if (fit) FitToScreen();
         }
     }
 

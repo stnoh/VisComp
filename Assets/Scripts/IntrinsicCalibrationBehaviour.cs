@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
+using VisComp;
 using OpenCvSharp;
 
 public class IntrinsicCalibrationBehaviour : MonoBehaviour
@@ -25,21 +24,8 @@ public class IntrinsicCalibrationBehaviour : MonoBehaviour
 
     void Start()
     {
-        camera_script = CameraObject.GetComponent<CameraTextureBehaviour>();
-
-        if (null == camera_script)
-        {
-            Debug.LogError("ERROR: there is no CameraTextureBehaviour in the CameraObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
-
-        marker_script = MarkerObject.GetComponent<MarkerObjectBehaviour>();
-
-        if (null == marker_script)
-        {
-            Debug.LogError("ERROR: there is no MarkerObjectBehaviour in the MarkerObject.");
-            UnityEditor.EditorApplication.isPaused = true;
-        }
+        camera_script = CameraObject.GetComponentOrPause<CameraTextureBehaviour>("ERROR: there is no CameraTextureBehaviour in the CameraObject.");
+        marker_script = MarkerObject.GetComponentOrPause<MarkerObjectBehaviour> ("ERROR: there is no MarkerObjectBehaviour in the MarkerObject.");
 
         // initialize data in advance
         ResetCalibrationData();

@@ -49,5 +49,26 @@ namespace VisComp
             m.RecalculateNormals();
             return m;
         }
+
+        public static T GetComponentOrPause<T>(this GameObject self, string message)
+        {
+            if (null == self)
+            {
+                Debug.LogError(message);
+                UnityEditor.EditorApplication.isPaused = true;
+                return default;
+            }
+
+            T component = self.GetComponent<T>();
+
+            if (null == component)
+            {
+                Debug.LogError(message);
+                UnityEditor.EditorApplication.isPaused = true;
+                return default;
+            }
+
+            return component;
+        }
     }
 }
