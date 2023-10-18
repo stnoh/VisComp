@@ -142,7 +142,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         return marker_bgr;
     }
 
-    public override bool GetDetectedCorners(Mat image_bgra, out Point3f[] _objectPoints, out Point2f[] _imagePoints, bool show)
+    public override bool GetDetectedCorners(Mat image_bgra, out Point3f[] _objectPoints, out Point2f[] _imagePoints, bool show, string winname)
     {
         // ArUco only supports 1- (grayscale) or 3-channels (BGR)
         Mat image_bgr = image_bgra.Clone();
@@ -177,7 +177,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         if (show)
         {
             CvAruco.DrawDetectedMarkers(image_bgr, corners, ids);
-            Cv2.ImShow("detected", image_bgr);
+            Cv2.ImShow(winname, image_bgr);
         }
 
         return true;

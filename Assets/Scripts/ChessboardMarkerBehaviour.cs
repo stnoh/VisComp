@@ -89,7 +89,7 @@ public class ChessboardMarkerBehaviour : MarkerObjectBehaviour
         return marker_bgr;
     }
 
-    public override bool GetDetectedCorners(Mat image_bgra, out Point3f[] _corners, out Point2f[] _points, bool show)
+    public override bool GetDetectedCorners(Mat image_bgra, out Point3f[] _corners, out Point2f[] _points, bool show, string winname)
     {
         bool detected = Cv2.FindChessboardCorners(image_bgra, pattern_size, out _points, ChessboardFlags.AdaptiveThresh);
         _corners = corners;
@@ -98,7 +98,7 @@ public class ChessboardMarkerBehaviour : MarkerObjectBehaviour
         {
             Mat image_clone = image_bgra.Clone();
             Cv2.DrawChessboardCorners(image_clone, pattern_size, _points, detected);
-            Cv2.ImShow("detected", image_clone);
+            Cv2.ImShow(winname, image_clone);
         }
 
         return detected;

@@ -32,7 +32,7 @@ public abstract class MarkerObjectBehaviour : MonoBehaviour
 
     #region PUBLIC_METHODS
 
-    public virtual bool GetDetectedCorners(Mat image_bgra, out Point3f[] objectPoints, out Point2f[] imagePoints, bool show = false)
+    public virtual bool GetDetectedCorners(Mat image_bgra, out Point3f[] objectPoints, out Point2f[] imagePoints, bool show = false, string winname="detected")
     {
         Debug.LogError("this function should be overrided.");
         throw new System.Exception();
