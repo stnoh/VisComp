@@ -290,7 +290,7 @@ public class StereoDepth_test : MonoBehaviour
         for (int i = 0; i < new_image_size.Width ; i++)
         {
             Vec3f pt3d = indices[j, i];
-            if (Helper.IsFinite(pt3d) && 0.0f < pt3d.Item2)
+            if (VisComp.Helper.IsFinite(pt3d) && 0.0f < pt3d.Item2)
             {
                 float x = +pt3d.Item0;
                 float y = +pt3d.Item1;

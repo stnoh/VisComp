@@ -54,7 +54,7 @@ public abstract class MarkerObjectBehaviour : MonoBehaviour
 
         // add Components to this GameObject
         var mf = gameObject.AddComponent<MeshFilter>();
-        mf.mesh = Helper.GetBoardMesh(half_scale_x, half_scale_z);
+        mf.mesh = VisComp.Helper.GetBoardMesh(half_scale_x, half_scale_z);
 
         material = new Material(Shader.Find("Unlit/Texture"));
         material.mainTexture = tex2D;
@@ -66,7 +66,7 @@ public abstract class MarkerObjectBehaviour : MonoBehaviour
     public void ExportPDF(string filepath)
     {
         Mat img_bgra = material.mainTexture.ToMat();
-        Helper.ExportPDF(filepath, img_bgra, new Vector2(W_mm, H_mm));
+        VisComp.Helper.ExportPDF(filepath, img_bgra, new Vector2(W_mm, H_mm));
     }
 
     public void RemoveMarkerTexture2D()
