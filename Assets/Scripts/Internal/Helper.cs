@@ -70,5 +70,13 @@ namespace VisComp
 
             return component;
         }
+
+        public static bool IsFinite(Vec3f v)
+        {
+            return
+                !float.IsInfinity(v.Item0) && !float.IsNaN(v.Item0) &&
+                !float.IsInfinity(v.Item1) && !float.IsNaN(v.Item1) &&
+                !float.IsInfinity(v.Item2) && !float.IsNaN(v.Item2);
+        }
     }
 }
