@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 using OpenCvSharp;
 using PdfSharp.Drawing;
@@ -77,6 +78,105 @@ namespace VisComp
                 !float.IsInfinity(v.Item0) && !float.IsNaN(v.Item0) &&
                 !float.IsInfinity(v.Item1) && !float.IsNaN(v.Item1) &&
                 !float.IsInfinity(v.Item2) && !float.IsNaN(v.Item2);
+        }
+
+        // [TEMPORARY] simple initial setting for obj file loading
+        public static void SetTriMeshData(ref Mesh mesh, List<Vector3> vertices, List<int> indices, List<Vector3> normals = null, List<Color32> colors = null)
+        {
+            // set minimum requirements (vertices, faces)
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(indices, 0);
+
+            // set vertex normal if exists
+            if (null != normals)
+            {
+                if (vertices.Count == normals.Count)
+                {
+                    mesh.SetNormals(normals);
+                }
+                else
+                {
+                    mesh.RecalculateNormals();
+                    Debug.Log("invalid vertex normal: calculate vertex normal based on vertices & indices.");
+                }
+            }
+
+            // set vertex color if exists
+            if (null != colors)
+            {
+                if (vertices.Count == colors.Count)
+                {
+                    mesh.SetColors(colors);
+                }
+                else
+                {
+                    Debug.Log("invalid vertex color: the number of vertex color does not match with vertex.");
+                }
+            }
+
+            mesh.RecalculateBounds();
+        }
+
+        // [TEMPORARY] simple Obj import module (not perfect)
+        public static Mesh ReadObj(string filepath)
+        {
+            // prepare containers
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<int> indices = new List<int>();
+
+            // read obj file (ASCII format)
+            string[] lines = System.IO.File.ReadAllLines(filepath);
+
+            foreach (string line in lines)
+            {
+                if (0 == line.Length) continue;
+                if ('#' == line[0]) continue; // skip the comment
+
+                string[] elem = line.Split(' ');
+
+                if ("f" == elem[0])
+                {
+                    int[] elem_idx = { 1, 2, 3 };
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int i = elem_idx[j];
+                        string[] f_elem = elem[i].Split('/');
+                        int vidx = int.Parse(f_elem[0]);
+                        //int tidx = int.Parse(f_elem[1]); // [TEMP] 
+                        int nidx = int.Parse(f_elem[2]);
+
+                        if (vidx != nidx)
+                        {
+                            Debug.Log("Unsupported: vertex and normal index is different.");
+                        }
+
+                        indices.Add(vidx - 1);
+                    }
+                }
+                else
+                {
+                    float x = float.Parse(elem[1]);
+                    float y = float.Parse(elem[2]);
+                    float z = float.Parse(elem[3]);
+
+                    Vector3 vec3 = new Vector3(x, y, z);
+
+                    switch (elem[0])
+                    {
+                        case "v": vertices.Add(vec3); break;
+                        case "vn": normals.Add(vec3); break;
+                        default: Debug.LogWarning("Unsupported: " + line); break;
+                    }
+                }
+            }
+
+            // create mesh & set its name as filename
+            Mesh mesh = new Mesh();
+            SetTriMeshData(ref mesh, vertices, indices, normals);
+            mesh.name = System.IO.Path.GetFileNameWithoutExtension(filepath);
+
+            return mesh;
         }
     }
 }
