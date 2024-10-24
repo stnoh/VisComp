@@ -10,7 +10,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
 {
     #region CONSTANTS
 
-    public Dictionary ar_dict = CvAruco.GetPredefinedDictionary(OpenCvSharp.Aruco.PredefinedDictionaryName.Dict6X6_250);
+    Dictionary ar_dict = CvAruco.GetPredefinedDictionary(OpenCvSharp.Aruco.PredefinedDictionaryName.Dict6X6_250);
 
     const int block_per_marker = 8;  // Dict6x6 = 8x8 blocks = marker
     const int pixel_per_block  = 16; // [CAUTION] include white spaces between markers
@@ -25,10 +25,15 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
     public int   marker_width  = 8;
     public int   marker_height = 5;
 
+    public int   marker_id_begin = 0;
+
     public Dictionary<int, Point3f[]> markermap_corners; // < marker id, four corners (LT, RT, RB, LB) >
 
     [HideInInspector]
     public List<int> marker_ids;
+
+    [HideInInspector]
+    public int marker_id_end = -1;
 
     #endregion // PUBLIC_MEMBERS
 
@@ -54,7 +59,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
 
         markermap_corners = new Dictionary<int, Point3f[]>();
 
-        int marker_id = 0;
+        int count = 0;
         for (int j = 0; j < marker_height; j++)
         for (int i = 0; i < marker_width ; i++)
         {
@@ -66,14 +71,14 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
                 pixel_per_marker, pixel_per_marker);
                 
             // four corners (LT, RT, RB, LB)
-            markermap_corners.Add(marker_ids[marker_id], new Point3f[] {
+            markermap_corners.Add(marker_ids[count], new Point3f[] {
                 PixelToObject(rect.Left , rect.Top),
                 PixelToObject(rect.Left + rect.Width, rect.Top),
                 PixelToObject(rect.Left + rect.Width, rect.Top + rect.Height),
                 PixelToObject(rect.Left , rect.Top + rect.Height),
             } );
 
-            marker_id++;
+            count++;
         }
     }
 
@@ -116,15 +121,15 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         Mat marker_bgr = new Mat(H, W, MatType.CV_8UC3, new Scalar(255, 255, 255));
 
         marker_ids = Enumerable.Range(0, 250).ToList(); // maximum: 250
-        // [TODO: shuffle] data for randomization
-        marker_ids = marker_ids.GetRange(0, marker_width * marker_height); // cut the list
+        marker_id_end = marker_id_begin + marker_width * marker_height;
+        marker_ids = marker_ids.GetRange(marker_id_begin, marker_width * marker_height); // cut the list
 
-        int marker_id = 0;
+        int count     = 0;
         for (int j = 0; j < marker_height; j++)
         for (int i = 0; i < marker_width ; i++)
         {
             Mat buf = new Mat();
-            CvAruco.DrawMarker(ar_dict, marker_ids[marker_id], pixel_per_marker, buf);
+            CvAruco.DrawMarker(ar_dict, marker_ids[count], pixel_per_marker, buf);
             Cv2.CvtColor(buf, buf, ColorConversionCodes.GRAY2BGR);
                 
             var rect = new OpenCvSharp.Rect(
@@ -136,7 +141,7 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
             var pos = new Mat(marker_bgr, rect);
             buf.CopyTo(pos);
 
-            marker_id++;
+            count++;
         }
 
         return marker_bgr;
@@ -155,23 +160,28 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
         CvAruco.DetectMarkers(image_bgr, ar_dict, out corners, out ids, detector_params, out rejected_corners);
 
         int N = ids.Length;
-        _objectPoints = new Point3f[4 * N];
-        _imagePoints  = new Point2f[4 * N];
+        var _objectPoints_list = new List<Point3f>();
+        var _imagePoints_list = new List<Point2f>();
 
-        if (N == 0) return false;
+        if (N == 0)
+        {
+            _objectPoints = _objectPoints_list.ToArray();
+            _imagePoints  = _imagePoints_list.ToArray();
+            return false;
+        }
 
         // copy detected marker corners and their 3D position
         for (int n = 0; n < N; n++)
         {
             int id = ids[n];
+
+            if (id < marker_id_begin || marker_id_end <= id) continue;
+
             Point3f[] _objectPoints_this = markermap_corners[id];
             Point2f[] _imagePoints_this  = corners[n];
 
-            for (int i = 0; i < 4; i++)
-            {
-                _objectPoints[4 * n + i] = _objectPoints_this[i];
-                _imagePoints [4 * n + i] = _imagePoints_this [i];
-            }
+            _objectPoints_list.AddRange(_objectPoints_this);
+            _imagePoints_list.AddRange(_imagePoints_this);
         }
 
         if (show)
@@ -180,6 +190,10 @@ public class ArUcoMarkerBehaviour : MarkerObjectBehaviour
             Cv2.ImShow(winname, image_bgr);
         }
 
+        _objectPoints = _objectPoints_list.ToArray();
+        _imagePoints  = _imagePoints_list.ToArray();
+
+        if (_objectPoints.Length < 4) return false;
         return true;
     }
 
