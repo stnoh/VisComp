@@ -9,7 +9,7 @@
 
 以下のようなものが既にライブラリとして含まれている．  
 
-- [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity/releases/tag/v3.1.3)
-- OpenCVSharp (commit b1d0ac, get from NuGet) 
-  + System.Drawing.Common.5.0.0
-- [PDFSharp](http://www.pdfsharp.net/)
+- [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity/releases/tag/v3.1.3): NuGetをUnityで利用可能にするためのプラグイン  
+- OpenCVSharp (commit [b1d0ac](https://github.com/stnoh/VisComp/tree/b1d0ac5a257ecfe791991d6668586ea423af59f7), NuGetから入手)  
+  + System.Drawing.Common.5.0.0: OpenCVSharp利用に必須  
+- [PDFSharp](http://www.pdfsharp.net/): A4の紙にマーカのサイズを考慮して印刷できるようにしている  
